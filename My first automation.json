@@ -1,0 +1,204 @@
+{
+  "name": "My first automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -752,
+        -176
+      ],
+      "id": "d1410396-2cde-469b-8428-74c5ae7e6818",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=\"Artificial+Intelligence\"+OR+AI+OR+LLM+OR+\"Generative+AI\"+&hl=en-US&gl=US&ceid=US:en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        -176
+      ],
+      "id": "f09cbf9e-8dee-4bd9-bf9f-a300f8814bce",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -176
+      ],
+      "id": "05cdb079-735f-4cb2-8964-6a365308368f",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -176
+      ],
+      "id": "eab1bba2-d4ad-44c6-b564-08da820d0900",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=I will provide 10 AI news items with headlines, descriptions, and URLs. Analyze all items and select the top 5 most important news stories. Summarize each in simple English, highlighting what happened and why it matters.\n\nGenerate a complete, clean, responsive HTML page titled \"Today's Top 5 AI News\". Display each story in a separate rounded <div> card with a numbered <h2> headline, short summary, key takeaway, and clickable original source URL. Use a modern design with a light background, subtle borders, good spacing, and readable typography.\n\nReturn only the final HTML code. Do not invent facts or URLs.\n\n{{ JSON.stringify($json.data)}}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        144,
+        -176
+      ],
+      "id": "1cf2a596-4b9f-4062-9292-6579a155cf2c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        32
+      ],
+      "id": "86351f65-735c-4def-8b26-a36803656060",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gzTPC3n3qHhI41Gg",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "preethikonathala@gmail.com",
+        "subject": "Daily Ai News Updates",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        -176
+      ],
+      "id": "7922d224-24b9-4bba-8383-cac09ef2989f",
+      "name": "Send a message",
+      "webhookId": "0190999f-5254-44f0-a44c-e432583b9ced",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "fx7HsnDwStMmZ3Oq",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3c5cba9e-1611-4225-8bfb-f097e36786cd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f8bbfc79a4531d7e3a42b1c12dcb633de8dd3bdadfcf7db65a80cea7701676f6"
+  },
+  "nodeGroups": [],
+  "id": "vN3ehjIdD38raXe1",
+  "tags": []
+}
